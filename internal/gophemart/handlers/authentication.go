@@ -51,7 +51,9 @@ func (authHandler *AuthenticationHandler) Authenticate(res http.ResponseWriter, 
 		return
 	}
 
+	cookie := jwtService.CreateCookieWithJWT(jwt)
+
+	http.SetCookie(res, cookie)
 	res.Header().Set("content-Type", "application/json")
 	res.WriteHeader(http.StatusOK)
-	json.NewEncoder(res).Encode(jwt)
 }

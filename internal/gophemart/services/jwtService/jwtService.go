@@ -1,6 +1,7 @@
 package jwtService
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -45,4 +46,16 @@ func GetUserId(tokenString string) int {
 	}
 
 	return claims.UserID
+}
+
+func CreateCookieWithJWT(jwt string) *http.Cookie {
+	return &http.Cookie{
+		Name:     "token",
+		Value:    jwt,
+		Path:     "/",
+		MaxAge:   36000,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	}
 }
