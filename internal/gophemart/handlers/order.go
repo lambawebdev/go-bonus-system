@@ -61,7 +61,7 @@ func (orderHandler *OrderHandler) CreateOrder(res http.ResponseWriter, req *http
 	}
 
 	if exists {
-		http.Error(res, err.Error(), http.StatusConflict)
+		http.Error(res, "number was used by another user", http.StatusConflict)
 		return
 	}
 

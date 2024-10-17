@@ -59,16 +59,21 @@ func RunServer(db *sql.DB) error {
 
 	userRepo := repositories.NewUserRepository(db)
 	orderRepo := repositories.NewOrderRepository(db)
+	transRepo := repositories.NewTransactionRepository(db)
 
 	regHandler := handlers.NewRegistrationHandler(userRepo)
 	authHandler := handlers.NewAuthenticationHandler(userRepo)
 	orderHandler := handlers.NewOrderHandler(orderRepo)
+	balanceHandler := handlers.NewBalanceHandler(orderRepo, transRepo)
 
 	r.Post("/api/user/register", regHandler.Register)
 	r.Post("/api/user/login", authHandler.Authenticate)
 
 	r.Get("/api/user/orders", middleware.AuthMiddleware(orderHandler.GetOrders))
 	r.Post("/api/user/orders", middleware.AuthMiddleware(orderHandler.CreateOrder))
+
+	r.Get("/api/user/withdrawals", middleware.AuthMiddleware(balanceHandler.GetWithdrawals))
+	r.Post("/api/user/balance/withdraw", middleware.AuthMiddleware(balanceHandler.Withdraw))
 
 	err := http.ListenAndServe(config.GetHost(), r)
 
