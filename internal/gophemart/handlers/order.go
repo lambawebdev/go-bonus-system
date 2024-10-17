@@ -53,6 +53,18 @@ func (orderHandler *OrderHandler) CreateOrder(res http.ResponseWriter, req *http
 		return
 	}
 
+	exists, err := orderHandler.orderRepo.CheckIfOrderWasAddedByAnotherUser(req.Context(), buf.String())
+
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if exists {
+		http.Error(res, err.Error(), http.StatusConflict)
+		return
+	}
+
 	_, err = orderHandler.orderRepo.CreateOrder(req.Context(), buf.String())
 	statusOk := http.StatusAccepted
 
