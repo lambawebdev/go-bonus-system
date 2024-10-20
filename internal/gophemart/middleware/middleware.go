@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -11,6 +12,8 @@ import (
 func AuthMiddleware(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		bearer := req.Header.Get("Authorization")
+
+		fmt.Println("ETA BEARER", bearer)
 
 		if bearer == "" || !strings.HasPrefix(bearer, "Bearer ") {
 			http.Error(res, "Missing authentication token", http.StatusUnauthorized)
