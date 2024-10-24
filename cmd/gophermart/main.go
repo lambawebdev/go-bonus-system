@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"embed"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/handlers"
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/middleware"
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/repositories"
+	orderservice "github.com/lambawebdev/go-bonus-system/internal/gophemart/services/orderService"
 	"github.com/pressly/goose/v3"
 )
 
@@ -61,6 +63,8 @@ func RunServer(db *sql.DB) error {
 	orderRepo := repositories.NewOrderRepository(db)
 	transRepo := repositories.NewTransactionRepository(db)
 
+	orderService := orderservice.NewOrderService(orderRepo)
+
 	regHandler := handlers.NewRegistrationHandler(userRepo)
 	authHandler := handlers.NewAuthenticationHandler(userRepo)
 	orderHandler := handlers.NewOrderHandler(orderRepo)
@@ -75,6 +79,8 @@ func RunServer(db *sql.DB) error {
 	r.Get("/api/user/withdrawals", middleware.AuthMiddleware(balanceHandler.GetWithdrawals))
 	r.Post("/api/user/balance/withdraw", middleware.AuthMiddleware(balanceHandler.Withdraw))
 	r.Get("/api/user/balance", middleware.AuthMiddleware(balanceHandler.GetBalance))
+
+	go orderService.RunUpdateOrdersStatuses(context.Background())
 
 	err := http.ListenAndServe(config.GetHost(), r)
 
