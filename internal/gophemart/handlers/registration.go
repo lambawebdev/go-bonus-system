@@ -7,7 +7,7 @@ import (
 
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/dto"
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/repositories"
-	"github.com/lambawebdev/go-bonus-system/internal/gophemart/services/jwtService"
+	"github.com/lambawebdev/go-bonus-system/internal/gophemart/services/jwtservice"
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/validators"
 )
 
@@ -46,7 +46,7 @@ func (regHandler *RegistrationHandler) Register(res http.ResponseWriter, req *ht
 		return
 	}
 
-	jwt, err := jwtService.BuildJWTString(user.Id)
+	jwt, err := jwtservice.BuildJWTString(user.ID)
 
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)

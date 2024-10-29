@@ -5,7 +5,7 @@ import (
 
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/dto"
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/repositories"
-	"github.com/lambawebdev/go-bonus-system/internal/gophemart/services/bcryptService"
+	"github.com/lambawebdev/go-bonus-system/internal/gophemart/services/bcryptservice"
 )
 
 func ValidateAuthRequest(userRepo repositories.UserRepo, userDto *dto.User) error {
@@ -23,7 +23,7 @@ func ValidateAuthRequest(userRepo repositories.UserRepo, userDto *dto.User) erro
 		return err
 	}
 
-	err = bcryptService.ValidateUserPassword(user.Password, userDto.Password)
+	err = bcryptservice.ValidateUserPassword(user.Password, userDto.Password)
 
 	if err != nil {
 		return err

@@ -7,10 +7,11 @@ import (
 	"time"
 
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/entities"
+	"github.com/lambawebdev/go-bonus-system/internal/gophemart/middleware"
 	blackboxservice "github.com/lambawebdev/go-bonus-system/internal/gophemart/services/blackBoxService"
 )
 
-const GET_BALANCE = `
+const GetBalance = `
 	SELECT COALESCE(SUM(transactions.amount), 0) - COALESCE(SUM(withdrawals.sum), 0) as current,
 	       COALESCE(SUM(withdrawals.sum), 0) as withdrawn
 	FROM transactions
@@ -18,14 +19,14 @@ const GET_BALANCE = `
 	WHERE transactions.user_id = $1	
 	`
 
-const GET_TRANSACTIONS = `
+const GetTransactions = `
     SELECT orders.number, amount, processed_at FROM transactions
 	LEFT JOIN orders ON transactions.order_id = orders.id
 	WHERE transactions.user_id = $1
 	ORDER BY processed_at DESC
     `
 
-const CREATE_TRANSACTION = `
+const CreateTransaction = `
    INSERT INTO transactions (amount, user_id, order_id, processed_at)
    VALUES ($1, $2, $3, $4)
     `
@@ -43,7 +44,7 @@ func NewTransactionRepository(db *sql.DB) *TransactionRepository {
 func (repository *TransactionRepository) GetBalance(ctx context.Context) (entities.Balance, error) {
 	var balance entities.Balance
 
-	if err := repository.database.QueryRow(GET_BALANCE, ctx.Value("user_id")).Scan(&balance.Current, &balance.Withdrawn); err != nil {
+	if err := repository.database.QueryRow(GetBalance, ctx.Value(&middleware.UserIDkey)).Scan(&balance.Current, &balance.Withdrawn); err != nil {
 		if err == sql.ErrNoRows {
 			return balance, err
 		}
@@ -57,7 +58,7 @@ func (repository *TransactionRepository) GetBalance(ctx context.Context) (entiti
 }
 
 func (repository *TransactionRepository) GetTransactions(ctx context.Context) ([]entities.Transaction, error) {
-	rows, err := repository.database.Query(GET_TRANSACTIONS, ctx.Value("user_id"))
+	rows, err := repository.database.Query(GetTransactions, ctx.Value(&middleware.UserIDkey))
 	if err != nil {
 		return nil, err
 	}
@@ -84,11 +85,11 @@ func (repository *TransactionRepository) GetTransactions(ctx context.Context) ([
 	return transactions, nil
 }
 
-func (repository *TransactionRepository) CreateTransaction(userId int, orderAccrual blackboxservice.OrderAccrual) error {
+func (repository *TransactionRepository) CreateTransaction(userID int, orderAccrual blackboxservice.OrderAccrual) error {
 	//Приводим к целочисленному значению перед сохранением
 	amountToInt := math.Floor((orderAccrual.Accrual) * 10000)
 
-	_, err := repository.database.Exec(CREATE_TRANSACTION, amountToInt, userId, orderAccrual.OrderId, time.Now())
+	_, err := repository.database.Exec(CreateTransaction, amountToInt, userID, orderAccrual.OrderID, time.Now())
 
 	if err != nil {
 		return err

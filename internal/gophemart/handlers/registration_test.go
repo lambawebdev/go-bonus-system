@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -25,14 +24,11 @@ func TestSignUp(t *testing.T) {
 		createUserRow := sqlmock.NewRows([]string{"id", "login"}).
 			AddRow("0", "john.doe")
 
-		mock.ExpectQuery(repositories.CHECK_LOGIN_FOR_EXISTANCE).WithArgs("john.doe").WillReturnRows(loginNotExistsRow)
-		mock.ExpectQuery(repositories.CREATE_USER).WillReturnRows(createUserRow)
+		mock.ExpectQuery(repositories.CheckLoginForExistance).WithArgs("john.doe").WillReturnRows(loginNotExistsRow)
+		mock.ExpectQuery(repositories.CreateUser).WillReturnRows(createUserRow)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest(http.MethodPost, "/api/user/register", strings.NewReader(`{"login": "john.doe", "password": "1234"}`))
-
-		ctx := context.WithValue(r.Context(), "DB", db)
-		r = r.WithContext(ctx)
 
 		userRepo := repositories.NewUserRepository(db)
 		regHandler := NewRegistrationHandler(userRepo)

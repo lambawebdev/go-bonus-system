@@ -1,4 +1,4 @@
-package jwtService
+package jwtservice
 
 import (
 	"net/http"
@@ -8,19 +8,19 @@ import (
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/config"
 )
 
-const TOKEN_EXP = time.Hour * 3
+const TokenExp = time.Hour * 3
 
 type Claims struct {
 	jwt.RegisteredClaims
 	UserID int
 }
 
-func BuildJWTString(userId int) (string, error) {
+func BuildJWTString(userID int) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TOKEN_EXP)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenExp)),
 		},
-		UserID: userId,
+		UserID: userID,
 	})
 
 	tokenString, err := token.SignedString([]byte(config.GetJWTSecret()))
@@ -31,7 +31,7 @@ func BuildJWTString(userId int) (string, error) {
 	return tokenString, nil
 }
 
-func GetUserId(tokenString string) int {
+func GetUserID(tokenString string) int {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims,
 		func(t *jwt.Token) (interface{}, error) {

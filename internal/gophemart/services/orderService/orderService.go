@@ -21,13 +21,11 @@ func NewOrderService(orderRepo repositories.OrderRepo, transRepo repositories.Tr
 	}
 }
 
-func (orderServices *OrderService) RunUpdateOrdersStatuses() {
+func (orderService *OrderService) RunAccruals() {
 	ticker := time.NewTicker(time.Second * 10)
-	for {
-		select {
-		case <-ticker.C:
-			orderServices.UpdateOrdersStatuses()
-		}
+
+	for range ticker.C {
+		orderService.UpdateOrdersStatuses()
 	}
 }
 
@@ -45,14 +43,14 @@ func (orderService *OrderService) UpdateOrdersStatuses() {
 			fmt.Println(err)
 		}
 
-		orderAccrual.OrderId = order.Id
+		orderAccrual.OrderID = order.ID
 
 		if orderAccrual.Status != "" {
 			intStatus := blackboxservice.FromStringStatusToInt(orderAccrual.Status)
-			orderService.orderRepo.UpdateOrderStatus(order.Id, intStatus)
+			orderService.orderRepo.UpdateOrderStatus(order.ID, intStatus)
 
-			if intStatus == entities.STATUS_PROCESSED {
-				orderService.transRepo.CreateTransaction(order.UserId, orderAccrual)
+			if intStatus == entities.StatusProcessed {
+				orderService.transRepo.CreateTransaction(order.UserID, orderAccrual)
 			}
 		}
 	}

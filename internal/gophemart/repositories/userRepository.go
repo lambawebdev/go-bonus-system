@@ -6,12 +6,12 @@ import (
 
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/dto"
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/entities"
-	"github.com/lambawebdev/go-bonus-system/internal/gophemart/services/bcryptService"
+	"github.com/lambawebdev/go-bonus-system/internal/gophemart/services/bcryptservice"
 )
 
-const CREATE_USER = `INSERT INTO users (login, password) VALUES ($1, $2) RETURNING id, login`
-const GET_USER = `SELECT id, login, password FROM users WHERE login = $1`
-const CHECK_LOGIN_FOR_EXISTANCE = `SELECT EXISTS(SELECT * FROM users WHERE login = $1)`
+const CreateUser = `INSERT INTO users (login, password) VALUES ($1, $2) RETURNING id, login`
+const GetUser = `SELECT id, login, password FROM users WHERE login = $1`
+const CheckLoginForExistance = `SELECT EXISTS(SELECT * FROM users WHERE login = $1)`
 
 type UserRepository struct {
 	database *sql.DB
@@ -26,7 +26,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 func (repository *UserRepository) GetExistingUser(login string) (entities.User, error) {
 	var user entities.User
 
-	if err := repository.database.QueryRow(GET_USER, login).Scan(&user.Id, &user.Login, &user.Password); err != nil {
+	if err := repository.database.QueryRow(GetUser, login).Scan(&user.ID, &user.Login, &user.Password); err != nil {
 		if err == sql.ErrNoRows {
 			return user, errors.New("user not exists")
 		}
@@ -40,7 +40,7 @@ func (repository *UserRepository) GetExistingUser(login string) (entities.User, 
 func (repository *UserRepository) CheckIfUserLoginAlreadyExists(login string) (bool, error) {
 	var exists bool
 
-	if err := repository.database.QueryRow(CHECK_LOGIN_FOR_EXISTANCE, login).Scan(&exists); err != nil {
+	if err := repository.database.QueryRow(CheckLoginForExistance, login).Scan(&exists); err != nil {
 		if err == sql.ErrNoRows {
 			return exists, nil
 		}
@@ -52,12 +52,12 @@ func (repository *UserRepository) CheckIfUserLoginAlreadyExists(login string) (b
 }
 
 func (repository *UserRepository) CreateUser(userDto dto.User) (entities.User, error) {
-	hashedPass, _ := bcryptService.HashPassword(userDto.Password)
+	hashedPass, _ := bcryptservice.HashPassword(userDto.Password)
 	userDto.Password = hashedPass
 
 	var user entities.User
 
-	if err := repository.database.QueryRow(CREATE_USER, userDto.Login, userDto.Password).Scan(&user.Id, &user.Login); err != nil {
+	if err := repository.database.QueryRow(CreateUser, userDto.Login, userDto.Password).Scan(&user.ID, &user.Login); err != nil {
 		if err == sql.ErrNoRows {
 			return user, err
 		}

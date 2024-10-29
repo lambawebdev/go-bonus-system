@@ -5,8 +5,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/lambawebdev/go-bonus-system/internal/gophemart/services/jwtService"
+	"github.com/lambawebdev/go-bonus-system/internal/gophemart/services/jwtservice"
 )
+
+type CtxKey string
+var UserIDkey CtxKey = "user_id"
 
 func AuthMiddleware(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -19,14 +22,14 @@ func AuthMiddleware(h http.HandlerFunc) http.HandlerFunc {
 
 		jwt := strings.Split(bearer, "Bearer ")[1]
 
-		userId := jwtService.GetUserId(jwt)
+		userID := jwtservice.GetUserID(jwt)
 
-		if userId == -1 {
+		if userID == -1 {
 			http.Error(res, "Invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		ctx := context.WithValue(req.Context(), "user_id", userId)
+		ctx := context.WithValue(req.Context(), &UserIDkey, userID)
 		newReq := req.WithContext(ctx)
 
 		h.ServeHTTP(res, newReq)

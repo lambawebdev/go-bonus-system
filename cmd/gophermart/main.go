@@ -80,7 +80,7 @@ func RunServer(db *sql.DB) error {
 	r.Post("/api/user/balance/withdraw", middleware.AuthMiddleware(balanceHandler.Withdraw))
 	r.Get("/api/user/balance", middleware.AuthMiddleware(balanceHandler.GetBalance))
 
-	go orderService.RunUpdateOrdersStatuses()
+	go orderService.RunAccruals()
 
 	err := http.ListenAndServe(config.GetHost(), r)
 

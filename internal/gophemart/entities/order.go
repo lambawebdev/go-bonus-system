@@ -3,8 +3,8 @@ package entities
 import "time"
 
 type Order struct {
-	Id        int       `json:"id"`
-	UserId    int       `json:"user_id"`
+	ID        int       `json:"id"`
+	UserID    int       `json:"user_id"`
 	Number    string    `json:"number"`
 	Status    string    `json:"status"`
 	CreatedAt time.Time `json:"created_at"`
@@ -13,10 +13,10 @@ type Order struct {
 }
 
 const (
-	STATUS_NEW        = 0
-	STATUS_PROCESSING = 1
-	STATUS_INVALID    = 2
-	STATUS_PROCESSED  = 3
+	StatusNew        = 0
+	StatusProcessing = 1
+	StatusInvalid    = 2
+	StatusProcessed  = 3
 )
 
 func TransformStatusToString(status int) string {

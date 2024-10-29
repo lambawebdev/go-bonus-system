@@ -12,9 +12,9 @@ import (
 )
 
 var mapStatuses = map[string]int{
-	"PROCESSING": entities.STATUS_PROCESSING,
-	"INVALID":    entities.STATUS_INVALID,
-	"PROCESSED":  entities.STATUS_PROCESSED,
+	"PROCESSING": entities.StatusProcessing,
+	"INVALID":    entities.StatusInvalid,
+	"PROCESSED":  entities.StatusProcessed,
 }
 
 func FromStringStatusToInt(status string) int {
@@ -58,5 +58,5 @@ type OrderAccrual struct {
 	Order   string  `json:"order"`
 	Status  string  `json:"status"`
 	Accrual float64 `json:"accrual"`
-	OrderId int
+	OrderID int
 }

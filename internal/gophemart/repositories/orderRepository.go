@@ -6,9 +6,10 @@ import (
 	"math"
 
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/entities"
+	"github.com/lambawebdev/go-bonus-system/internal/gophemart/middleware"
 )
 
-const GET_ORDERS = `
+const GetOrders = `
     SELECT orders.id, orders.user_id, orders.number, orders.status, orders.created_at, orders.updated_at, COALESCE(transactions.amount, 0)
 	FROM orders
 	LEFT JOIN transactions ON orders.id = transactions.order_id
@@ -16,24 +17,24 @@ const GET_ORDERS = `
 	ORDER BY orders.created_at DESC
     `
 
-const GET_NOT_PROCESSED_ORDERS = `
+const GetNotProcessedOrders = `
     SELECT id, user_id, number, status, created_at, updated_at FROM orders WHERE status != 3
 	ORDER BY created_at DESC
     `
 
-const UPDATE_ORDER_STATUS = `
+const UpdateOrderStatus = `
 	UPDATE orders SET status = $1 WHERE id = $2
 `
 
-const GET_ORDER = `
+const GetOrder = `
     SELECT id, user_id, number, status, created_at, updated_at FROM orders WHERE number = $1
     `
 
-const ORDER_WAS_ADDED_BY_ANOTHER_USER = `
+const OrderWasAddedByAnotherUser = `
     SELECT EXISTS(SELECT * FROM orders WHERE number = $1 AND user_id != $2)
     `
 
-const CREATE_ORDER = `
+const CreateOrder = `
     INSERT INTO orders (number, user_id) VALUES ($1, $2) 
 	RETURNING id, user_id, number, status, created_at, updated_at
 	`
@@ -49,7 +50,7 @@ func NewOrderRepository(db *sql.DB) *OrderRepository {
 }
 
 func (repository *OrderRepository) GetOrders(ctx context.Context) ([]entities.Order, error) {
-	rows, err := repository.database.Query(GET_ORDERS, ctx.Value("user_id"))
+	rows, err := repository.database.Query(GetOrders, ctx.Value(&middleware.UserIDkey))
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +63,7 @@ func (repository *OrderRepository) GetOrders(ctx context.Context) ([]entities.Or
 		var status int
 		var order entities.Order
 
-		if err := rows.Scan(&order.Id, &order.UserId, &order.Number, &status, &order.CreatedAt, &order.UpdatedAd, &amount); err != nil {
+		if err := rows.Scan(&order.ID, &order.UserID, &order.Number, &status, &order.CreatedAt, &order.UpdatedAd, &amount); err != nil {
 			return orders, err
 		}
 
@@ -83,7 +84,7 @@ func (repository *OrderRepository) GetOrders(ctx context.Context) ([]entities.Or
 }
 
 func (repository *OrderRepository) GetNotProcessedOrders() ([]entities.Order, error) {
-	rows, err := repository.database.Query(GET_NOT_PROCESSED_ORDERS)
+	rows, err := repository.database.Query(GetNotProcessedOrders)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +96,7 @@ func (repository *OrderRepository) GetNotProcessedOrders() ([]entities.Order, er
 		var status int
 		var order entities.Order
 
-		if err := rows.Scan(&order.Id, &order.UserId, &order.Number, &status, &order.CreatedAt, &order.UpdatedAd); err != nil {
+		if err := rows.Scan(&order.ID, &order.UserID, &order.Number, &status, &order.CreatedAt, &order.UpdatedAd); err != nil {
 			return orders, err
 		}
 
@@ -110,8 +111,8 @@ func (repository *OrderRepository) GetNotProcessedOrders() ([]entities.Order, er
 	return orders, nil
 }
 
-func (repository *OrderRepository) UpdateOrderStatus(orderId int, status int) error {
-	_, err := repository.database.Exec(UPDATE_ORDER_STATUS, status, orderId)
+func (repository *OrderRepository) UpdateOrderStatus(orderID int, status int) error {
+	_, err := repository.database.Exec(UpdateOrderStatus, status, orderID)
 	if err != nil {
 		return err
 	}
@@ -123,8 +124,8 @@ func (repository *OrderRepository) GetOrderByNumber(ctx context.Context, number 
 	var status int
 	var order entities.Order
 
-	if err := repository.database.QueryRow(GET_ORDER, number).
-		Scan(&order.Id, &order.UserId, &order.Number, &status, &order.CreatedAt, &order.UpdatedAd); err != nil {
+	if err := repository.database.QueryRow(GetOrder, number).
+		Scan(&order.ID, &order.UserID, &order.Number, &status, &order.CreatedAt, &order.UpdatedAd); err != nil {
 		if err == sql.ErrNoRows {
 			return order, err
 		}
@@ -140,7 +141,7 @@ func (repository *OrderRepository) GetOrderByNumber(ctx context.Context, number 
 func (repository *OrderRepository) CheckIfOrderWasAddedByAnotherUser(ctx context.Context, number string) (bool, error) {
 	var exists bool
 
-	if err := repository.database.QueryRow(ORDER_WAS_ADDED_BY_ANOTHER_USER, number, ctx.Value("user_id")).Scan(&exists); err != nil {
+	if err := repository.database.QueryRow(OrderWasAddedByAnotherUser, number, ctx.Value(&middleware.UserIDkey)).Scan(&exists); err != nil {
 		if err == sql.ErrNoRows {
 			return exists, nil
 		}
@@ -155,8 +156,8 @@ func (repository *OrderRepository) CreateOrder(ctx context.Context, number strin
 	var status int
 	var order entities.Order
 
-	if err := repository.database.QueryRow(CREATE_ORDER, number, ctx.Value("user_id")).
-		Scan(&order.Id, &order.UserId, &order.Number, &status, &order.CreatedAt, &order.UpdatedAd); err != nil {
+	if err := repository.database.QueryRow(CreateOrder, number, ctx.Value(&middleware.UserIDkey)).
+		Scan(&order.ID, &order.UserID, &order.Number, &status, &order.CreatedAt, &order.UpdatedAd); err != nil {
 		if err == sql.ErrNoRows {
 			return order, err
 		}

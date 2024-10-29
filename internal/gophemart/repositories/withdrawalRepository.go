@@ -8,15 +8,16 @@ import (
 
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/dto"
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/entities"
+	"github.com/lambawebdev/go-bonus-system/internal/gophemart/middleware"
 )
 
-const GET_WITHDRAWALS = `
+const GetWithdrawals = `
 	SELECT number, sum, processed_at
 	FROM withdrawals
 	WHERE user_id = $1	
 	`
 
-const CREATE_WITHDRAWAL = `
+const CreateWithdrawal = `
     INSERT INTO withdrawals (number, sum, processed_at, user_id)
 	VALUES ($1, $2, $3, $4)
     `
@@ -32,7 +33,7 @@ func NewWithdrawalRepository(db *sql.DB) *WithdrawalRepository {
 }
 
 func (repository *WithdrawalRepository) GetWithdrawals(ctx context.Context) ([]entities.Withdrawal, error) {
-	rows, err := repository.database.Query(GET_WITHDRAWALS, ctx.Value("user_id"))
+	rows, err := repository.database.Query(GetWithdrawals, ctx.Value(&middleware.UserIDkey))
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +64,7 @@ func (repository *WithdrawalRepository) CreateWithdrawal(ctx context.Context, tr
 	//Приводим к целочисленному значению перед сохранением
 	amountToInt := math.Floor((transactionDto.Amount) * 10000)
 
-	_, err := repository.database.Exec(CREATE_WITHDRAWAL, transactionDto.Number, amountToInt, time.Now(), ctx.Value("user_id"))
+	_, err := repository.database.Exec(CreateWithdrawal, transactionDto.Number, amountToInt, time.Now(), ctx.Value(&middleware.UserIDkey))
 
 	if err != nil {
 		return err
