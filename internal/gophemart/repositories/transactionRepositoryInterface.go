@@ -10,5 +10,5 @@ import (
 type TransRepo interface {
 	GetBalance(ctx context.Context) (entities.Balance, error)
 	GetTransactions(ctx context.Context) ([]entities.Transaction, error)
-	CreateTransaction(userID int, orderAccrual blackboxservice.OrderAccrual) error
+	CreateTransaction(userID int, orderAccrual blackboxservice.OrderAccrual)
 }

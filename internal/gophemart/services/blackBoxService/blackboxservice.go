@@ -11,6 +11,8 @@ import (
 	"github.com/lambawebdev/go-bonus-system/internal/gophemart/entities"
 )
 
+const SleepTimeSeconds = 60
+
 var mapStatuses = map[string]int{
 	"PROCESSING": entities.StatusProcessing,
 	"INVALID":    entities.StatusInvalid,
@@ -37,8 +39,8 @@ func GetOrderAccrual(number string) (OrderAccrual, error) {
 	}
 
 	if resp.StatusCode() == http.StatusTooManyRequests {
-		fmt.Println("429, Sleep for 60 seconds")
-		time.Sleep(60 * time.Second)
+		fmt.Printf("429, Sleep for %d\n seconds", SleepTimeSeconds)
+		time.Sleep(SleepTimeSeconds * time.Second)
 	}
 
 	if resp.StatusCode() == http.StatusNoContent {

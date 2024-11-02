@@ -120,7 +120,7 @@ func (repository *OrderRepository) UpdateOrderStatus(orderID int, status int) er
 	return nil
 }
 
-func (repository *OrderRepository) GetOrderByNumber(ctx context.Context, number string) (entities.Order, error) {
+func (repository *OrderRepository) GetOrderByNumber(number string) (entities.Order, error) {
 	var status int
 	var order entities.Order
 

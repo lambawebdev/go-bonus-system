@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"math"
 	"time"
 
@@ -51,7 +52,7 @@ func (repository *TransactionRepository) GetBalance(ctx context.Context) (entiti
 		return balance, err
 	}
 
-	balance.Current = balance.Current / 10000
+	balance.Current /= 10000
 	balance.Withdrawn = math.Abs(balance.Withdrawn / 10000)
 
 	return balance, nil
@@ -85,15 +86,13 @@ func (repository *TransactionRepository) GetTransactions(ctx context.Context) ([
 	return transactions, nil
 }
 
-func (repository *TransactionRepository) CreateTransaction(userID int, orderAccrual blackboxservice.OrderAccrual) error {
+func (repository *TransactionRepository) CreateTransaction(userID int, orderAccrual blackboxservice.OrderAccrual) {
 	//Приводим к целочисленному значению перед сохранением
 	amountToInt := math.Floor((orderAccrual.Accrual) * 10000)
 
 	_, err := repository.database.Exec(CreateTransaction, amountToInt, userID, orderAccrual.OrderID, time.Now())
 
 	if err != nil {
-		return err
+		fmt.Println(err)
 	}
-
-	return nil
 }
