@@ -54,6 +54,6 @@ func (regHandler *RegistrationHandler) Register(res http.ResponseWriter, req *ht
 	}
 
 	res.Header().Set("Authorization", "Bearer "+jwt)
-	res.Header().Set("content-Type", "application/json")
+	res.Header().Set("Content-Type", "application/json")
 	res.WriteHeader(http.StatusOK)
 }

@@ -3,10 +3,10 @@ module github.com/lambawebdev/go-bonus-system
 go 1.22
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/go-chi/chi v1.5.5
 	github.com/go-resty/resty/v2 v2.15.3
 	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang/mock v1.6.0
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/pressly/goose/v3 v3.22.1
